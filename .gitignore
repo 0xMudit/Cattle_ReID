@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Except README and Assets
+!README.md
+!Assets/
+!Assets/**
