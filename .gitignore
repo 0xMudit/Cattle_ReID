@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Data (too large for git)
+data/
+Dataset/
+*.tar.gz
+*.csv
+*.mp4
+*.avi
+*.mov
+
+# Models (large files)
+models/*.onnx
+models/*.pth
+models/*.pt
+
+# Training outputs
+logs/
+outputs/
+checkpoints/
+
+# Kaggle
+.kaggle/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
