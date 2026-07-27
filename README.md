@@ -82,6 +82,8 @@ Step 5: Either identify the cow or mark it as "Unknown"
 Step 6: Export the trained model to ONNX for deployment on edge devices
 ```
 
+![Pipeline Overview](Assets/pipeline_overview.png)
+
 ### Why Person Re-ID Models Work for Cows
 
 Person re-ID models are designed to distinguish between thousands of individuals using subtle visual cues (clothing, body shape, gait). Cows also have unique visual patterns:
@@ -1273,6 +1275,8 @@ Input Image → Augmented View 1 ─┐
 Input Image → Augmented View 2 ─┘
 ```
 
+![Contrastive Pre-Training](Assets/contrastive_pretraining.png)
+
 **Key code from CowIDentifier (Self-Supervised/lightning_multicam_model.py):**
 ```python
 # NTXentLoss + hard mining
@@ -1386,6 +1390,8 @@ result = matcher.match(query_embedding)
 | `convnext_small` | 50.2M | 768 | Slow | When accuracy is everything |
 | `swin_tiny` | 28.3M | 768 | Medium | Global body features |
 | `swin_small` | 50.0M | 768 | Slow | Best global understanding |
+
+![Multi-Backbone Architecture](Assets/multi_backbone.png)
 
 **Usage:**
 ```python
