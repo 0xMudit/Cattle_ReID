@@ -1551,7 +1551,7 @@ pip install torch torchvision ultralytics
 
 > **📝 Last Updated:** July 2026  
 > **Notebook Version:** 2.0 (Fixed)  
-> **Maintainer:** Khushbu 🌸  
+> **Maintainer:** Mudit  
 > **Questions?** Reach out via the repository issues or discussions.
 
 ---

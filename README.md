@@ -78,7 +78,6 @@ Uses the [CID (Cow Images Dataset)](https://cid-21.s3.amazonaws.com/) — auto-d
 
 MIT
 
-## Authors
+## Author
 
-- **Khushbu** — Original notebook, documentation
-- **Mudit** — Pipeline architecture, enhanced components
+- **Mudit** — Pipeline architecture, enhanced components, documentation
