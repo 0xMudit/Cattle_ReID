@@ -1,7 +1,9 @@
 # Ignore everything
 *
 
-# Except README and Assets
+# Except README, Assets, and the cattle_osnet pipeline
 !README.md
 !Assets/
 !Assets/**
+!cattle_osnet/
+!cattle_osnet/**
