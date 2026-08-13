@@ -7,6 +7,56 @@
 
 ---
 
+## ⚡ Repository Layout & Quick Start
+
+This repository contains **two complementary codebases** plus a Colab notebook:
+
+```
+Cattle_ReID/
+├── cattle_osnet/                    # Zero-shot OSNet Re-ID + pose visualization (runs locally)
+│   ├── run.py                       # gallery/query matching with OSNet embeddings
+│   ├── prep_videos.py               # videos → frame sampling → YOLO detection → cow crops
+│   ├── annotate.py                  # skeleton + head-tag overlay (no bounding boxes)
+│   ├── docs.md                      # detailed end-to-end pipeline documentation
+│   ├── models/                      # osnet.py, osnet_x1_0_imagenet.pth, cow_pose.pt
+│   ├── yolov8n.pt                   # COCO detection (cow class id = 21)
+│   ├── gallery/<cow_id>/*.jpg       # known identities (one folder per cow)
+│   ├── queries/*.jpg                # unknown images to match
+│   └── output/                      # sample frames + annotated results
+├── experiments/                     # ResNet / contrastive / multi-backbone research code
+│   ├── cattle_resnet.py             # ResNet18/34/50 backbone + embedding extractor
+│   ├── contrastive_pretrain.py      # self-supervised NTXent pre-training
+│   ├── multi_backbone.py            # swappable backbones + benchmark
+│   ├── kfold_eval.py                # k-fold cross-validation
+│   └── knn_matcher.py               # k-NN matching vs. mean-embedding matching
+├── cattle_reid_colab_fixed.ipynb    # supervised OSNet training notebook (Colab, T4 GPU)
+├── cattle_reid_master.ipynb         # legacy notebook
+├── cattle_reid_colab_fixed_docs.md  # companion docs for the Colab notebook
+├── requirements.txt                 # Python dependencies
+└── Assets/                          # pipeline diagrams
+```
+
+**Quick start (local, zero-shot OSNet — no training):**
+
+```bash
+pip install -r requirements.txt
+
+cd cattle_osnet
+python run.py --rebuild --threshold 0.6   # build gallery from gallery/<cow_id>/, match queries/
+python run.py -i queries/some_cow.jpg     # match a single image
+python annotate.py --src output/frames --out output/annotated   # skeleton + tag overlays
+python prep_videos.py --videos ../Dataset --out output/vidcrops # cow crops from videos
+```
+
+**Quick start (supervised training):** open `cattle_reid_colab_fixed.ipynb` in
+[Google Colab](https://colab.research.google.com/), switch the runtime to a T4
+GPU, and run all cells (details in [§18](#18-how-to-run-this-yourself-quick-start)).
+
+> ⚠️ Source footage (`Dataset/*.mp4` and re-encoded videos) is **not** committed —
+> it exceeds GitHub's 100 MB per-file limit. Keep it local and ignore it.
+
+---
+
 ## 📖 Table of Contents
 
 1. [What Is Cattle Re-Identification?](#1-what-is-cattle-re-identification)

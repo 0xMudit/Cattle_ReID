@@ -1,0 +1,28 @@
+# Cattle Re-ID dependencies
+#
+# GPU training/inference (recommended for the Colab notebook):
+#   pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
+# The OSNet zero-shot pipeline (cattle_osnet/) also works on CPU.
+
+# Core
+torch>=2.1.0
+torchvision>=0.16.0
+numpy
+
+# Computer vision
+ultralytics>=8.3.0
+opencv-python
+Pillow
+albumentations
+
+# Utilities
+matplotlib
+tqdm
+huggingface_hub
+
+# Optional: hard-negative mining in experiments/contrastive_pretrain.py
+pytorch_metric_learning
+
+# NOTE: the supervised notebook (cattle_reid_colab_fixed.ipynb) also needs
+# deep-person-reid from GitHub (NOT the fake PyPI `torchreid` package):
+#   pip install git+https://github.com/KaiyangZhou/deep-person-reid.git

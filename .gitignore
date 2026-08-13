@@ -1,9 +1,21 @@
-# Ignore everything
-*
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
 
-# Except README, Assets, and the cattle_osnet pipeline
-!README.md
-!Assets/
-!Assets/**
-!cattle_osnet/
-!cattle_osnet/**
+# Source footage (too large for GitHub: >100 MB)
+Dataset/
+*.mp4
+*.mov
+*.avi
+
+# Regenerated video prep outputs
+output/reencoded/
+output/vidcrops/*/
+cattle_osnet/output/reencoded/
+cattle_osnet/output/vidcrops/*/
+
+# Local OS / editor noise
+Thumbs.db
+.DS_Store
