@@ -4,18 +4,35 @@ __pycache__/
 *.pyo
 .ipynb_checkpoints/
 
-# Source footage (too large for GitHub: >100 MB)
+# Model weights — download via scripts/download_weights.py or auto-downloaded
+cattle_osnet/models/*.pth
+cattle_osnet/models/*.pt
+cattle_osnet/yolov8n.pt
+
+# Source footage (too large for GitHub: >100 MB per file)
 Dataset/
 *.mp4
 *.mov
 *.avi
 
-# Regenerated video prep outputs
-output/reencoded/
-output/vidcrops/*/
-cattle_osnet/output/reencoded/
-cattle_osnet/output/vidcrops/*/
+# Regenerated output (all under cattle_osnet/output/)
+cattle_osnet/output/
+# Keep sample annotated/frames images for README — re-add if needed:
+# !cattle_osnet/output/annotated/
+# !cattle_osnet/output/frames/
 
-# Local OS / editor noise
+# Kaggle run outputs
+kaggle/.run/
+kaggle/__pycache__/
+
+# PDFs (large binary; link in README instead)
+*.pdf
+
+# OS / editor noise
 Thumbs.db
 .DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

@@ -62,11 +62,8 @@ cattle_osnet/
 
 ## 3. Environment
 
-- **OS**: Windows (win32), PowerShell 5.1
-- **Python**: 3.12 at
-  `C:\Users\0xmud\AppData\Local\Programs\Python\Python312\python.exe`
-  ⚠️ *Always use this interpreter.* The default `python` on PATH is a 3.11 venv
-  without pip/torch.
+- **OS**: Windows / Linux / macOS
+- **Python**: 3.10+ (3.12 recommended)
 - **Key packages**:
   - `torch==2.5.1+cpu`, `torchvision==0.20.1+cpu`
   - `ultralytics==8.3.60` (YOLOv8 detection + pose)
@@ -78,7 +75,7 @@ cattle_osnet/
 
 ## 4. Source footage & the video problem
 
-Source files: `C:\Users\0xmud\OneDrive\Pictures\Cattle Repo\Dataset\`
+Source files: `Dataset/` (repo root, gitignored — not committed)
 
 | File | Duration | Frames | Note |
 |------|----------|--------|------|
@@ -271,23 +268,20 @@ changed pixels).
 
 ## 8. How to run
 
-```powershell
+```bash
 # Re-ID (gallery + queries from folders)
-$py = "C:\Users\0xmud\AppData\Local\Programs\Python\Python312\python.exe"
-& $py run.py --rebuild --threshold 0.6
+python run.py --rebuild --threshold 0.6
 
 # Re-ID a single image
-& $py run.py -i queries/some_cow.jpg
+python run.py -i queries/some_cow.jpg
 
 # Video prep (on re-encoded H.264!)
-& $py prep_videos.py --videos output/reencoded --out output/vidcrops
+python prep_videos.py --videos output/reencoded --out output/vidcrops
 ```
 
-The visualization scripts currently live in
-`%TEMP%\opencode\` (`tag_frames.py`, `beauty_tag.py`, `skeleton_tag.py`).
-**Recommendation:** move `skeleton_tag.py` into the repo (e.g.
-`annotate.py`) so the visualization is reproducible — otherwise a fresh session
-loses it.
+The visualization scripts live in the repo root's temp directory during development.
+**Recommendation:** keep `annotate.py` and `annotate_video.py` in the repo
+so the visualization is reproducible.
 
 ---
 
