@@ -6,6 +6,30 @@ Two complementary pipelines: a **zero-shot OSNet** approach (no training needed)
 
 ---
 
+## Model Weights
+
+All model weights are hosted on HuggingFace and downloaded automatically by `scripts/download_weights.py`.
+
+| Model | HuggingFace | Size | Purpose |
+|-------|------------|------|---------|
+| OSNet x1.0 | [0xmudit/cattle-reid-weights](https://huggingface.co/0xmudit/cattle-reid-weights/blob/main/osnet_x1_0_imagenet.pth) | 10.4 MB | Re-ID backbone (ImageNet-pretrained) |
+| Cow Pose (YOLOv8m-pose) | [0xmudit/cattle-reid-weights](https://huggingface.co/0xmudit/cattle-reid-weights/blob/main/cow_pose.pt) | 50.7 MB | 12 cow keypoint detection |
+| YOLOv8n | [0xmudit/cattle-reid-weights](https://huggingface.co/0xmudit/cattle-reid-weights/blob/main/yolov8n.pt) | 6.2 MB | Cow detection (COCO class 21) |
+
+**Repository:** [huggingface.co/0xmudit/cattle-reid-weights](https://huggingface.co/0xmudit/cattle-reid-weights)
+
+```bash
+# Download all weights (~67 MB total)
+python scripts/download_weights.py
+
+# Or download individually
+python scripts/download_weights.py --osnet
+python scripts/download_weights.py --pose
+python scripts/download_weights.py --yolo
+```
+
+---
+
 ## Quick Start
 
 ### Zero-shot (local, no training)
@@ -33,8 +57,6 @@ kaggle auth login
 python kaggle/run_pipeline.py --user <your-kaggle-username> run
 ```
 
-See [`kaggle/README.md`](kaggle/README.md) for full CLI and web UI instructions.
-
 > **Note:** Model weights (`*.pth`, `*.pt`) are not committed. Download with `python scripts/download_weights.py` or they'll be fetched automatically on first run. Source footage (`Dataset/*.mp4`) is also gitignored.
 
 ---
@@ -44,7 +66,6 @@ See [`kaggle/README.md`](kaggle/README.md) for full CLI and web UI instructions.
 ```
 Cattle_ReID/
 ├── README.md                         # this file
-├── HANWOOREID.md                     # HanwooReID paper study + implementation plan
 ├── LICENSE                           # MIT
 ├── requirements.txt                  # Python dependencies
 ├── scripts/
@@ -55,16 +76,18 @@ Cattle_ReID/
 │   ├── prep_videos.py                # videos → frame sampling → YOLO detection → cow crops
 │   ├── annotate.py                   # skeleton + head-tag overlay (no bounding boxes)
 │   ├── annotate_video.py             # video annotation
-│   ├── docs.md                       # detailed pipeline documentation
-│   ├── models/                       # osnet.py, osnet_x1_0_imagenet.pth, cow_pose.pt
-│   ├── yolov8n.pt                    # COCO detection (cow class id = 21)
+│   ├── models/
+│   │   ├── osnet.py                  # OSNet architecture (KaiyangZhou/deep-person-reid)
+│   │   ├── osnet_x1_0_imagenet.pth   # ImageNet-pretrained weights (auto-downloaded)
+│   │   └── cow_pose.pt              # YOLOv8m-pose for cow keypoints (auto-downloaded)
+│   ├── yolov8n.pt                    # COCO detection (cow class id = 21, auto-downloaded)
 │   ├── gallery/<cow_id>/*.jpg        # known identities (one folder per cow)
 │   ├── queries/*.jpg                 # unknown images to match
 │   └── output/                       # annotated results
 ├── experiments/                      # ResNet / contrastive / multi-backbone research
 │   ├── cattle_resnet.py              # ResNet18/34/50 backbone + embedding extractor
 │   ├── contrastive_pretrain.py       # self-supervised NTXent pre-training
-│   ├── multi_backbone.py             # swappable backbones + benchmark
+│   ├── multi_backbone.py             # swappable backbones + benchmark (11 architectures)
 │   ├── kfold_eval.py                 # k-fold cross-validation
 │   └── knn_matcher.py                # k-NN matching vs. mean-embedding matching
 ├── kaggle/                           # Kaggle pipeline (6 notebooks + CLI runner)
@@ -77,11 +100,9 @@ Cattle_ReID/
 │   ├── 06_reid_video_demo.ipynb      # annotated demo video generation
 │   ├── run_pipeline.py               # CLI: push datasets, run notebooks, chain steps
 │   ├── upload_kaggle.py              # dataset upload helper
-│   ├── make_meta_local.py            # local meta.json regeneration
-│   └── README.md                     # Kaggle pipeline docs + results
+│   └── make_meta_local.py            # local meta.json regeneration
 ├── cattle_reid_colab_fixed.ipynb     # supervised OSNet training notebook (Colab)
-├── cattle_reid_master.ipynb          # legacy notebook
-└── cattle_reid_colab_fixed_docs.md   # companion docs for the Colab notebook
+└── cattle_reid_master.ipynb          # legacy notebook (Kaggle/Colab compatible)
 ```
 
 ---
@@ -135,7 +156,21 @@ PyPI's `torchreid==0.2.5` is a fake/stub package. We use the standalone `models/
 
 The ImageNet-pretrained OSNet gives reasonable within-camera clustering but weaker cross-camera discrimination. Fine-tuning on cattle data is the next step.
 
-Full pipeline docs: [`cattle_osnet/docs.md`](cattle_osnet/docs.md)
+### Source footage notes
+
+The `Dataset/` directory contains 6 CCTV videos (~1.8 GB total). All are HEVC (H.265) and some streams are corrupted — re-encode to H.264 before use:
+
+```bash
+ffmpeg -i A1.mp4 -c:v libx264 -crf 23 -preset fast -pix_fmt yuv420p A1_h264.mp4
+```
+
+| File | Duration | Resolution | Status |
+|------|----------|------------|--------|
+| A1.mp4 | 5 min | 1920×1080 | OK after re-encode |
+| A2.mp4 | 5 min | 1920×1080 | 0 cows detected |
+| A3.mp4 | 17 min | 1920×1080 | Truncated, needs re-encode |
+| ch07m_*.mp4 | 26 min | 2880×1620 | CCTV, empty pen at sampled times |
+| ch10m_*.mp4 (×2) | 10+25 min | 2880×1620 | CCTV, empty pen at sampled times |
 
 ---
 
@@ -199,8 +234,6 @@ CFG = {
 | 7 | Duplicate torchreid installs | Single source: GitHub `deep-person-reid` |
 | 8 | No version pinning | `torch==2.1.0`, `torchvision==0.16.0` |
 
-Full notebook docs: [`cattle_reid_colab_fixed_docs.md`](cattle_reid_colab_fixed_docs.md)
-
 ---
 
 ## Kaggle Pipeline
@@ -247,13 +280,20 @@ python kaggle/run_pipeline.py --user <username> status
 python kaggle/run_pipeline.py --user <username> logs 03
 ```
 
-Full docs: [`kaggle/README.md`](kaggle/README.md)
+### Bugs fixed along the way
+
+- **Input mounting** — Kaggle's new mount nests inputs at `/kaggle/input/datasets/<owner>/<ds>/`. All notebooks now glob recursively.
+- **CUDA arch** — Tesla P100 (sm_60) needs `cu118` wheels. Cell 1 pins `torch==2.5.1 torchvision==0.20.1 --index-url .../whl/cu118`.
+- **JSON serialization** — `np.int64` is not JSON serializable. Cast to `int` and added a `default` handler.
+- **Heatmap dtype** — `np.arange(GRID)` produced int64, broke float arithmetic. Fixed with `dtype=np.float32`.
+- **Resumability** — `run_pipeline.py run --resume` reuses an existing kernel instead of pushing a new one.
 
 ---
 
 ## HanwooReID Paper Study
 
 **Paper:** "HanwooReID: Multi-view cattle re-identification with pose-aware transformer enhancements" (Liu et al., Computers and Electronics in Agriculture, 2025)
+**PDF:** `cattle-researchpaper.pdf` (repo root, gitignored)
 
 Hanwoo cattle have **no distinctive coat markings**, so appearance-only Re-ID fails. The paper builds a Transformer-based framework with two novel modules:
 
@@ -273,14 +313,24 @@ Projects hoof keypoints onto a bird's-eye-view plane using camera calibration, e
 | TransReID baseline | 83.2 | 92.3 | 62.8 |
 | **Ours (PHE + VCR)** | **94.0** | **95.3** | 80.6 |
 
-### Implementation roadmap for this repo
+### Our data assessment
+
+| File | Codec | Cows found | Notes |
+|------|-------|------------|-------|
+| A1.mp4 | HEVC | 3 detections (last minute only) | Phone footage |
+| A2.mp4 | HEVC | **0** | Phone footage, appears cowless |
+| A3.mp4 | HEVC | 14 detections (sporadic) | Phone footage |
+| ch07m_*.mp4 | HEVC | **0** (53 samples) | CCTV, morning, empty pen |
+| ch10m_*.mp4 (×2) | HEVC | **0** (71 samples) | CCTV, evening, empty pen |
+
+Not usable as-is for supervised multi-view Re-ID training — needs identity labels, camera calibration, and confirmed cow frames.
+
+### Implementation roadmap
 
 1. `cattle_osnet/transformer_reid/` — TransReID-style ViT-B/16 + PHE
 2. `cattle_osnet/pose_heatmaps.py` — kpts → Gaussian heatmaps → encoder
 3. `cattle_osnet/calibrate.py` — DLT camera calibration
 4. `cattle_osnet/vcr.py` — hoof back-projection + constrained retrieval
-
-Full study: [`HANWOOREID.md`](HANWOOREID.md)
 
 ---
 
@@ -288,23 +338,29 @@ Full study: [`HANWOOREID.md`](HANWOOREID.md)
 
 The `experiments/` directory contains research code adapted from the [CowIDentifier](https://github.com/Phoenix4582/CowIDentifier) project:
 
-| File | Purpose |
-|------|---------|
-| `cattle_resnet.py` | ResNet18/34/50 backbone with cattle fine-tuning |
-| `contrastive_pretrain.py` | Self-supervised NTXent pre-training |
-| `multi_backbone.py` | 11 swappable backbones (ResNet, EfficientNet, MobileNet, ConvNeXt, Swin) |
-| `kfold_eval.py` | K-fold cross-validation for reliable metrics |
-| `knn_matcher.py` | KNN majority voting (replaces simple mean-embedding matching) |
+| File | Lines | Purpose |
+|------|-------|---------|
+| `cattle_resnet.py` | 253 | ResNet18/34/50 backbone with cattle fine-tuning |
+| `contrastive_pretrain.py` | 405 | Self-supervised NTXent pre-training with hard negative mining |
+| `multi_backbone.py` | 380 | 11 swappable backbones + benchmark |
+| `kfold_eval.py` | 302 | K-fold cross-validation for reliable metrics |
+| `knn_matcher.py` | 239 | KNN majority voting (replaces simple mean-embedding matching) |
 
 ### Supported backbones
 
-| Backbone | Params | Best For |
-|----------|--------|----------|
-| resnet18 | 11.7M | Baseline, well-tested |
-| efficientnet_b0 | 5.3M | Best accuracy/speed tradeoff |
-| mobilenet_v3_small | 2.5M | Edge deployment, CCTV |
-| convnext_tiny | 28.6M | Maximum accuracy |
-| swin_tiny | 28.3M | Global body features |
+| Backbone | Params | Embedding Dim | Best For |
+|----------|--------|---------------|----------|
+| resnet18 | 11.7M | 512 | Baseline, well-tested |
+| resnet34 | 21.3M | 512 | Slightly better than resnet18 |
+| resnet50 | 23.5M | 2048 | Richer features |
+| efficientnet_b0 | 5.3M | 1280 | **Best accuracy/speed tradeoff** |
+| efficientnet_b2 | 9.1M | 1408 | Better accuracy than b0 |
+| mobilenet_v3_small | 2.5M | 576 | **Fastest** — edge deployment, CCTV |
+| mobilenet_v3_large | 5.4M | 960 | Edge with better accuracy |
+| convnext_tiny | 28.6M | 768 | **Maximum accuracy** |
+| convnext_small | 50.2M | 768 | When accuracy is everything |
+| swin_tiny | 28.3M | 768 | Global body features |
+| swin_small | 50.0M | 768 | Best global understanding |
 
 ---
 
@@ -323,6 +379,8 @@ The `experiments/` directory contains research code adapted from the [CowIDentif
 | **ONNX** | Universal model format for deployment on edge devices |
 | **YOLO** | You Only Look Once — fast object detection (cow class = 21 in COCO) |
 | **OSNet** | Omni-Scale Network — learns features at multiple scales simultaneously |
+| **CID** | Cow Images Dataset — the training dataset hosted on Amazon S3 |
+| **NTXentLoss** | Normalized Temperature-scaled Cross Entropy — self-supervised contrastive loss |
 
 ---
 
@@ -334,12 +392,12 @@ pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorc
 pip install git+https://github.com/KaiyangZhou/deep-person-reid.git
 
 # Computer vision + utilities
-pip install albumentations onnx onnxruntime ultralytics matplotlib tqdm
+pip install albumentations onnx onnxruntime ultralytics matplotlib tqdm huggingface_hub
 
 # For Kaggle pipeline
 pip install kaggle
 
-# For contrastive pre-training
+# For contrastive pre-training (experiments/)
 pip install pytorch_metric_learning
 ```
 
@@ -367,6 +425,9 @@ Organize by cow ID folders, upload to Colab, copy into `data/raw/images/`, re-ru
 **Q: Can I resume training?**
 Yes — checkpoints are saved automatically. Find them in `logs/osnet_x1_0/model/`.
 
+**Q: Installation fails with `ModuleNotFoundError: No module named 'torchreid'`?**
+You installed the fake PyPI `torchreid`. Uninstall it and use `pip install git+https://github.com/KaiyangZhou/deep-person-reid.git` instead. Restart runtime after install.
+
 ---
 
 ## Known Limitations
@@ -379,6 +440,7 @@ Yes — checkpoints are saved automatically. Find them in `logs/osnet_x1_0/model
 | No temporal smoothing | Each video frame processed independently |
 | 30 epochs may be insufficient | More epochs needed for >200 cows |
 | Cow pose model is weak | Trained on only 341 images — many partial skeletons |
+| Cross-camera discrimination is soft | OSNet zero-shot gives cos 0.66–0.76 across cameras |
 
 The system fails most with: poor lighting, extreme occlusion, very similar-looking cows (solid colors), low-resolution images, unusual angles.
 
@@ -392,6 +454,8 @@ The system fails most with: poor lighting, extreme occlusion, very similar-looki
 
 **Advanced:** Video-level tracking, multi-view fusion, active learning, Siamese networks, edge deployment on Jetson Nano.
 
+**HanwooReID upgrade:** Implement ViT-B/16 + PHE + VCR as described in the paper study above.
+
 ---
 
 ## License
@@ -400,5 +464,5 @@ MIT License — see [LICENSE](LICENSE).
 
 ---
 
-> **Last Updated:** August 2026  
+> **Last Updated:** August 2026
 > **Questions?** Open an issue or discussion on the repository.
