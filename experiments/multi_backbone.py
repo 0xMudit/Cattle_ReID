@@ -300,7 +300,7 @@ def benchmark_backbones(input_size=128, device='cuda'):
                     start = time.perf_counter()
                     _ = model(dummy)
                     if device == 'cuda':
-                        torch.cuda.sink()
+                        torch.cuda.synchronize()
                     end = time.perf_counter()
                     times.append((end - start) * 1000)
 

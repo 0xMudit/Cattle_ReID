@@ -30,7 +30,7 @@ QUERY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'queries')
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
 GALLERY_PKL = os.path.join(OUTPUT_DIR, 'gallery.pkl')
 
-IMG_H, IMG_W = 256, 128
+IMG_H, IMG_W = 256, 192
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 COS_THRESHOLD = 0.6   # below this, a query is "Unknown"
