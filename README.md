@@ -120,6 +120,8 @@ YOLOv8n detection (cow class 21) ──▶ cow crops
         └──▶ cow_pose.pt (12 keypoints) ──▶ skeleton + head tag overlay
 ```
 
+![Pipeline Overview](Assets/pipeline_overview.png)
+
 Two separate concerns:
 1. **Re-ID** — "is this cow the same as the one in the gallery?" (embeddings)
 2. **Visualization** — "show me the cows and where their joints are" (skeleton/tags)
@@ -361,6 +363,8 @@ The `experiments/` directory contains research code adapted from the [CowIDentif
 | convnext_small | 50.2M | 768 | When accuracy is everything |
 | swin_tiny | 28.3M | 768 | Global body features |
 | swin_small | 50.0M | 768 | Best global understanding |
+
+![Multi-Backbone Architecture](Assets/multi_backbone.png)
 
 ---
 
