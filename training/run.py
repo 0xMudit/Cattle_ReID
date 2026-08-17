@@ -15,15 +15,6 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-STEP_FUNCTIONS = {
-    "download": lambda: __import__("training.download", fromlist=[""]).download(),
-    "process": lambda: __import__("training.process", fromlist=[""]).process_images(),
-    "train": lambda: __import__("training.train", fromlist=[""]).train(),
-    "evaluate": lambda: __import__("training.evaluate", fromlist=[""]).evaluate(),
-    "export": lambda: __import__("training.export", fromlist=[""]).export_onnx(),
-}
-
 ALL_STEPS = ["download", "process", "train", "evaluate", "export"]
 
 
@@ -33,11 +24,25 @@ def run(step="all"):
             run(s)
         return
 
-    if step not in STEP_FUNCTIONS:
+    if step == "download":
+        from training.download import download, extract
+        download()
+        extract()
+    elif step == "process":
+        from training.process import process_images
+        process_images()
+    elif step == "train":
+        from training.train import train
+        train()
+    elif step == "evaluate":
+        from training.evaluate import evaluate
+        evaluate()
+    elif step == "export":
+        from training.export import export_onnx
+        export_onnx()
+    else:
         print(f"Unknown step: {step}. Choose from: {', '.join(ALL_STEPS)}")
         sys.exit(1)
-
-    STEP_FUNCTIONS[step]()
 
 
 def main():
