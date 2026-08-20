@@ -175,8 +175,8 @@ class CattleEmbeddingExtractor:
             if boxes is None or len(boxes) == 0:
                 return results
 
-            # Filter to cow class (COCO class 21)
-            mask = boxes.cls.cpu().numpy() == 21
+            # Filter to cow class (COCO class 19)
+            mask = boxes.cls.cpu().numpy() == 19
             if not mask.any():
                 return results
 

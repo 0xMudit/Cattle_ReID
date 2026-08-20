@@ -1,6 +1,13 @@
 import os
+import torch
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# RTX 5080 optimizations
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
+torch.backends.cudnn.benchmark = True
+torch.backends.cudnn.deterministic = False
 
 CFG = {
     "proj": REPO,
@@ -14,7 +21,7 @@ CFG = {
 
     "h": 256,
     "w": 192,
-    "bs": 128,
+    "bs": 64,
     "lr": 0.001,
     "lr_min": 1e-6,
     "ep": 100,
@@ -25,7 +32,7 @@ CFG = {
     "weight_x": 50,
     "label_smooth": 0.1,
     "num_instances": 4,
-    "workers": 8,
+    "workers": 12,
     "amp": True,
     "grad_accum": 1,
     "cosine_anneal": True,

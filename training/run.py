@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Main entry point for cattle ReID training pipeline.
+"""Main entry point for the cattle ReID training pipeline.
 
 Usage:
-    python -m training.run                # full pipeline
-    python -m training.run --step download # download CID dataset
-    python -m training.run --step process  # YOLO crop + split
-    python -m training.run --step train    # train OSNet
-    python -m training.run --step evaluate # evaluate
-    python -m training.run --step export   # export ONNX
+    python -m training.run                     # full pipeline
+    python -m training.run --step download     # download CID dataset
+    python -m training.run --step process      # YOLO crop + split
+    python -m training.run --step train        # train HanwooReID (ViT + PHE)
+    python -m training.run --step evaluate     # query vs gallery evaluation
+    python -m training.run --step export       # export ONNX
 """
 import argparse
 import sys
@@ -32,11 +32,12 @@ def run(step="all"):
         from training.process import process_images
         process_images()
     elif step == "train":
-        from training.train import train
-        train()
+        from training.train_v3 import parse_args as train_args
+        from training.train_v3 import train
+        train(train_args([]))
     elif step == "evaluate":
-        from training.evaluate import evaluate
-        evaluate()
+        from training.test_model_v3 import main as evaluate
+        evaluate([])
     elif step == "export":
         from training.export import export_onnx
         export_onnx()

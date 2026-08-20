@@ -22,6 +22,19 @@ def find_best_checkpoint(save_dir):
     return max(cks, key=os.path.getctime)
 
 
+def letterbox_resize(img, target_h, target_w):
+    """Aspect-ratio preserving resize with zero-padding (matches training Prep.crop)."""
+    w0, h0 = img.size
+    scale = min(target_w / w0, target_h / h0)
+    new_w, new_h = int(w0 * scale), int(h0 * scale)
+    resized = img.resize((new_w, new_h), Image.BILINEAR)
+    out = Image.new("RGB", (target_w, target_h), (0, 0, 0))
+    pad_w = (target_w - new_w) // 2
+    pad_h = (target_h - new_h) // 2
+    out.paste(resized, (pad_w, pad_h))
+    return out
+
+
 def evaluate(save_dir=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     save_dir = save_dir or os.path.join(CFG["logs_dir"], CFG["model_name"])
@@ -49,11 +62,9 @@ def evaluate(save_dir=None):
     torchreid.utils.load_pretrained_weights(model, ck)
     model.eval()
 
-    transform = T.Compose([
-        T.Resize((CFG["h"], CFG["w"])),
-        T.ToTensor(),
-        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    # Use letterbox resize to match training preprocessing (process.py Prep.crop)
+    IMAGENET_MEAN = [0.485, 0.456, 0.406]
+    IMAGENET_STD = [0.229, 0.224, 0.225]
 
     proc = CFG["data_proc"]
     gal_dir = os.path.join(proc, "gallery")
@@ -67,7 +78,10 @@ def evaluate(save_dir=None):
         except (IndexError, ValueError):
             continue
         img = Image.open(p).convert("RGB")
-        x = transform(img).unsqueeze(0).to(device)
+        img = letterbox_resize(img, CFG["h"], CFG["w"])
+        x = np.array(img).astype(np.float32) / 255.0
+        x = (x - np.array(IMAGENET_MEAN)) / np.array(IMAGENET_STD)
+        x = torch.from_numpy(x.transpose(2, 0, 1)).unsqueeze(0).to(device)
         with torch.no_grad():
             emb = model(x).cpu().numpy().flatten()
         emb = emb / (np.linalg.norm(emb) + 1e-12)
@@ -90,7 +104,10 @@ def evaluate(save_dir=None):
             continue
 
         img = Image.open(p).convert("RGB")
-        x = transform(img).unsqueeze(0).to(device)
+        img = letterbox_resize(img, CFG["h"], CFG["w"])
+        x = np.array(img).astype(np.float32) / 255.0
+        x = (x - np.array(IMAGENET_MEAN)) / np.array(IMAGENET_STD)
+        x = torch.from_numpy(x.transpose(2, 0, 1)).unsqueeze(0).to(device)
         with torch.no_grad():
             emb = model(x).cpu().numpy().flatten()
         emb = emb / (np.linalg.norm(emb) + 1e-12)

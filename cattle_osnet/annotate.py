@@ -32,7 +32,7 @@ DEFAULT_OUT = os.path.join(BASE, 'output', 'annotated')
 
 CONF = 0.15
 KPT_CONF = 0.10
-COW_CLS = 21
+COW_CLS = 19
 
 KP_NAMES = ["Nose", "R_Eye", "L_Eye", "Neck", "LF_Hoof", "RF_Hoof",
             "LB_Hoof", "RB_Hoof", "Backbone", "TailRoot", "BackPose", "Stomach"]

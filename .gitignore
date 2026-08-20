@@ -28,6 +28,16 @@ kaggle/__pycache__/
 # PDFs (large binary; link in README instead)
 *.pdf
 
+# Local training artifacts (hosted on HuggingFace instead)
+models/
+logs/
+data/
+*.log
+nohup.out
+
+# Local tooling
+.opencode/
+
 # OS / editor noise
 Thumbs.db
 .DS_Store

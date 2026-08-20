@@ -15,7 +15,7 @@ import argparse
 import cv2
 import numpy as np
 
-COW_CLS = 21
+COW_CLS = 19
 DET_CONF = 0.25
 
 

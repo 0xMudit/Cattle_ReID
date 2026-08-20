@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """Download model weights required by the cattle Re-ID pipeline.
 
-Downloads three files into cattle_osnet/models/ and cattle_osnet/:
+Downloads four files into cattle_osnet/models/ and cattle_osnet/:
   1. osnet_x1_0_imagenet.pth  — OSNet Re-ID backbone (KaiyangZhou/deep-person-reid)
   2. cow_pose.pt              — YOLOv8m-pose fine-tuned for cow keypoints
-  3. yolov8n.pt               — YOLOv8n detection (cow class 21, COCO)
+  3. yolov8m.pt               — YOLOv8m detection (cow class 21, COCO)
+  4. yolov8n.pt               — YOLOv8n detection (cow class 21, COCO, lightweight)
 
 Usage:
     python scripts/download_weights.py          # download all
     python scripts/download_weights.py --osnet  # OSNet only
     python scripts/download_weights.py --pose   # cow pose only
-    python scripts/download_weights.py --yolo   # YOLOv8n only
+    python scripts/download_weights.py --yolo   # YOLOv8m detection
+    python scripts/download_weights.py --yolo-nano  # YOLOv8n detection
 """
 
 import argparse
@@ -37,7 +39,7 @@ WEIGHTS = {
         "repo": "0xmudit/cattle-reid-weights",
         "filename": "yolov8n.pt",
         "dest": os.path.join(REPO, "cattle_osnet", "yolov8n.pt"),
-        "desc": "YOLOv8n nano (COCO detection, cow class 21)",
+        "desc": "YOLOv8n nano (COCO detection, cow class 19)",
     },
 }
 

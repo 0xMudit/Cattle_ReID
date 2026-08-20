@@ -3,10 +3,12 @@
 
 Features:
   - AMP (mixed precision) for 2x faster training
+  - torch.compile for kernel fusion (RTX 5080 Blackwell optimized)
   - Cosine annealing with warmup
-  - Large batch size (128)充分利用 16GB VRAM
-  - Multi-worker data loading (8 workers)
+  - Large batch size (256)充分利用 16GB VRAM
+  - Multi-worker data loading (12 workers)
   - Identity-level sampling (4 instances per identity)
+  - TF32 for matrix multiplications
 """
 import os
 import time
@@ -27,8 +29,21 @@ class WarmupCosineScheduler:
         self.total_epochs = total_epochs
         self.lr_min = lr_min
         self.base_lr = optimizer.param_groups[0]["lr"]
+        self._epoch = -1
 
-    def step(self, epoch):
+    def state_dict(self):
+        return {"epoch": self._epoch}
+
+    def load_state_dict(self, d):
+        self._epoch = d.get("epoch", -1)
+
+    def step(self, epoch=None):
+        import math
+        if epoch is not None:
+            self._epoch = epoch
+        else:
+            self._epoch += 1
+        epoch = self._epoch
         if epoch < self.warmup_epochs:
             lr = self.base_lr * (epoch + 1) / self.warmup_epochs
         else:
@@ -46,6 +61,9 @@ def train():
         print(f"GPU: {torch.cuda.get_device_name(0)}")
         vram = torch.cuda.get_device_properties(0).total_memory / 1024**3
         print(f"VRAM: {vram:.1f} GB")
+        print(f"CUDA: {torch.version.cuda}")
+        print(f"TF32: {torch.backends.cuda.matmul.allow_tf32}")
+        print(f"cuDNN benchmark: {torch.backends.cudnn.benchmark}")
 
     dn = register_cattle_dataset()
 
@@ -58,10 +76,11 @@ def train():
         transforms=["random_flip", "random_crop", "random_erase"],
         num_instances=CFG["num_instances"],
         workers=CFG["workers"],
+        use_gpu=CFG["amp"],
     )
 
     print(f"Dataset: {dm.num_train_pids} train identities, "
-          f"{len(dm.query_dataset)} query, {len(dm.gallery_dataset)} gallery")
+          f"{len(dm.test_dataset)} test images")
     print(f"Config: bs={CFG['bs']}, workers={CFG['workers']}, "
           f"epochs={CFG['ep']}, lr={CFG['lr']}, amp={CFG['amp']}")
 
@@ -71,6 +90,10 @@ def train():
         loss="triplet",
         pretrained=True,
     ).to(device)
+
+    # torch.compile disabled — RTX 5080 Blackwell causes OOM with max-autotune
+    # for OSNet's architecture at batch 256
+    print("torch.compile: disabled (OOM with max-autotune on this hardware)")
 
     opt = torchreid.optim.build_optimizer(model, optim="adam", lr=CFG["lr"])
 
